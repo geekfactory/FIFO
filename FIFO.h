@@ -38,7 +38,7 @@
 /*-------------------------------------------------------------*/
 #include <stdlib.h>
 #include <string.h>
-#include "Compiler.h"
+#include <stdint.h>
 /*-------------------------------------------------------------*/
 /*		Macros and definitions				*/
 /*-------------------------------------------------------------*/
@@ -52,12 +52,12 @@
  * to access data on the buffer
  */
 typedef struct xFIFOStruct {
-	BYTE * pxHeadAddress; //!< Start address on memory for item space
-	WORD xItemSize; //!< Size in bytes for each element in the buffer
-	WORD xByteSize; //!< Size in bytes of the whole buffer
-	WORD xReadOffset; //!< Memory offset from which we will read data
-	WORD xWriteOffset; //!< Memory offset where data will be written
-	WORD xStoredBytes; //!< Number of bytes used currently by stored items
+	uint8_t * pxHeadAddress; //!< Start address on memory for item space
+	uint16_t xItemSize; //!< Size in bytes for each element in the buffer
+	uint16_t xByteSize; //!< Size in bytes of the whole buffer
+	uint16_t xReadOffset; //!< Memory offset from which we will read data
+	uint16_t xWriteOffset; //!< Memory offset where data will be written
+	uint16_t xStoredBytes; //!< Number of bytes used currently by stored items
 } xFIFO;
 
 /**
@@ -67,6 +67,8 @@ enum enBufferSide {
 	BUFFER_FRONT,
 	BUFFER_BACK,
 };
+
+typedef enum _BOOL { FALSE = 0, TRUE } BOOL;
 
 typedef xFIFO * xFIFOHandle;
 
@@ -87,7 +89,7 @@ typedef xFIFO * xFIFOHandle;
  * structure that contains the buffer information (xFIFOHandle).
  * NULL is returned if something fails.
  */
-xFIFOHandle fifo_create(WORD itemcount, WORD itemsize);
+xFIFOHandle fifo_create(uint16_t itemcount, uint16_t itemsize);
 
 /**
  * @brief Creates a statically allocated FIFO buffer
@@ -105,7 +107,7 @@ xFIFOHandle fifo_create(WORD itemcount, WORD itemsize);
  * @return This function performs some basic validation on the parameters passed,
  * if something is wrong with it will return NULL.
  */
-xFIFOHandle fifo_create_static(xFIFOHandle fifo, BYTE * buf, WORD itemcount, WORD itemsize);
+xFIFOHandle fifo_create_static(xFIFOHandle fifo, uint8_t * buf, uint16_t itemcount, uint16_t itemsize);
 
 /**
  * @brief Adds one item to the FIFO buffer
@@ -178,7 +180,7 @@ BOOL fifo_empty(xFIFOHandle fifo);
  * 
  * @return Returns TRUE if the data was discarted, false if not.
  */
-BOOL fifo_discard(xFIFOHandle fifo, WORD count, enum enBufferSide side);
+BOOL fifo_discard(xFIFOHandle fifo, uint16_t count, enum enBufferSide side);
 
 #endif
 // End of Header file

@@ -26,14 +26,14 @@
 static void fifo_copyfrom(xFIFOHandle, const void *);
 static void fifo_copyto(xFIFOHandle, const void *);
 
-xFIFOHandle fifo_create(WORD itemcount, WORD itemsize)
+xFIFOHandle fifo_create(uint16_t itemcount, uint16_t itemsize)
 {
 	xFIFOHandle newfifo;
-	if (itemcount > (WORD) 0) {
+	if (itemcount > (uint16_t) 0) {
 
 		if (NULL != (newfifo = (xFIFO *) malloc(sizeof( xFIFO)))) {
-			WORD bytesize = (WORD) itemcount * itemsize; // Calculate the size in bytes of the buffer
-			newfifo->pxHeadAddress = (BYTE *) malloc(bytesize); // Try to allocate space for the buffer data
+			uint16_t bytesize = (uint16_t) itemcount * itemsize; // Calculate the size in bytes of the buffer
+			newfifo->pxHeadAddress = (uint8_t *) malloc(bytesize); // Try to allocate space for the buffer data
 			if (newfifo->pxHeadAddress != NULL) {
 				newfifo->xItemSize = itemsize;
 				newfifo->xByteSize = bytesize; // Initialize struct elements
@@ -49,7 +49,7 @@ xFIFOHandle fifo_create(WORD itemcount, WORD itemsize)
 	return NULL;
 }
 
-xFIFOHandle fifo_create_static(xFIFOHandle fifo, BYTE * buf, WORD itemcount, WORD itemsize)
+xFIFOHandle fifo_create_static(xFIFOHandle fifo, uint8_t * buf, uint16_t itemcount, uint16_t itemsize)
 {
 	if (buf != NULL && fifo != NULL && itemcount != 0) // Sanity check for memory and element sizes
 	{
@@ -102,9 +102,9 @@ BOOL fifo_empty(xFIFOHandle fifo)
 		return FALSE;
 }
 
-BOOL fifo_discard(xFIFOHandle fifo, WORD count, enum enBufferSide side)
+BOOL fifo_discard(xFIFOHandle fifo, uint16_t count, enum enBufferSide side)
 {
-	WORD iTemp;
+	uint16_t iTemp;
 	iTemp = fifo->xItemSize * count; // Compute byte size of elements to be deleted
 	if (iTemp <= fifo->xStoredBytes) // Check if we can remove the requested ammount of data
 	{
@@ -122,7 +122,7 @@ BOOL fifo_discard(xFIFOHandle fifo, WORD count, enum enBufferSide side)
 
 static void fifo_copyfrom(xFIFOHandle fifo, const void * item)
 {
-	memcpy(item, (void *) (fifo->pxHeadAddress + fifo->xReadOffset), (WORD) fifo->xItemSize);
+	memcpy(item, (void *) (fifo->pxHeadAddress + fifo->xReadOffset), (uint16_t) fifo->xItemSize);
 	fifo->xReadOffset += fifo->xItemSize;
 	if (fifo->xReadOffset >= fifo->xByteSize) {
 		fifo->xReadOffset = 0;
@@ -131,7 +131,7 @@ static void fifo_copyfrom(xFIFOHandle fifo, const void * item)
 
 static void fifo_copyto(xFIFOHandle fifo, const void *item)
 {
-	memcpy((void *) (fifo->pxHeadAddress + fifo->xWriteOffset), item, (WORD) fifo->xItemSize);
+	memcpy((void *) (fifo->pxHeadAddress + fifo->xWriteOffset), item, (uint16_t) fifo->xItemSize);
 	fifo->xWriteOffset += fifo->xItemSize;
 	if (fifo->xWriteOffset >= fifo->xByteSize) {
 		fifo->xWriteOffset = 0;
