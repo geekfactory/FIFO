@@ -1,0 +1,34 @@
+#######################################
+# Syntax Coloring Map for FIFO
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+fifo_t	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+fifo_create	KEYWORD2
+fifo_create_static	KEYWORD2
+fifo_add	KEYWORD2
+fifo_get	KEYWORD2
+fifo_full	KEYWORD2
+fifo_empty	KEYWORD2
+fifo_discard	KEYWORD2
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Structures (KEYWORD3)
+#######################################
+fifo_descriptor	KEYWORD3
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+E_FIFO_FRONT	LITERAL1
+E_FIFO_BACK	LITERAL1

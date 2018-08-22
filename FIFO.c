@@ -20,120 +20,128 @@
 
 #include "FIFO.h"
 
-/*-------------------------------------------------------------*/
-/*		Private function prototypes								*/
-/*-------------------------------------------------------------*/
-static void fifo_copyfrom(xFIFOHandle, const void *);
-static void fifo_copyto(xFIFOHandle, const void *);
+/*-------------------------------------------------------------*
+ *		Private function prototypes			*
+ *-------------------------------------------------------------*/
+static void fifo_copy_from(fifo_t, void *);
+static void fifo_copy_to(fifo_t, const void *);
 
-xFIFOHandle fifo_create(uint16_t itemcount, uint16_t itemsize)
+/*-------------------------------------------------------------*
+ *		Public API implementation			*
+ *-------------------------------------------------------------*/
+fifo_t fifo_create(uint16_t count, uint16_t size)
 {
-	xFIFOHandle newfifo;
-	if (itemcount > (uint16_t) 0) {
+	fifo_t newfifo;
+	if (count > (uint16_t) 0) {
 
-		if (NULL != (newfifo = (xFIFO *) malloc(sizeof( xFIFO)))) {
-			uint16_t bytesize = (uint16_t) itemcount * itemsize; // Calculate the size in bytes of the buffer
-			newfifo->pxHeadAddress = (uint8_t *) malloc(bytesize); // Try to allocate space for the buffer data
-			if (newfifo->pxHeadAddress != NULL) {
-				newfifo->xItemSize = itemsize;
-				newfifo->xByteSize = bytesize; // Initialize struct elements
-				newfifo->xReadOffset = 0;
-				newfifo->xWriteOffset = 0;
-				newfifo->xStoredBytes = 0;
-				return newfifo; // Return the pointer to the created structure
+		if (NULL != (newfifo = (struct fifo_descriptor *) malloc(sizeof(struct fifo_descriptor)))) {
+			// Calculate the size in bytes of the buffer
+			uint16_t bytesize = (uint16_t) count * size;
+			// Try to allocate space for the buffer data
+			newfifo->itemspace = (uint8_t *) malloc(bytesize);
+			if (newfifo->itemspace != NULL) {
+				// Initialize structure members
+				newfifo->itemsize = size;
+				newfifo->allocatedbytes = bytesize;
+				newfifo->writeoffset = 0;
+				newfifo->storedbytes = 0;
+				// Return the pointer to fifo_descriptor structure
+				return newfifo;
 			} else {
+				// Cannot allocate space for items, free struct resources
 				free(newfifo);
 			}
 		}
 	}
+	// Return NULL if something fails
 	return NULL;
 }
 
-xFIFOHandle fifo_create_static(xFIFOHandle fifo, uint8_t * buf, uint16_t itemcount, uint16_t itemsize)
+fifo_t fifo_create_static(fifo_t fifo, uint8_t * buf, uint16_t count, uint16_t size)
 {
-	if (buf != NULL && fifo != NULL && itemcount != 0) // Sanity check for memory and element sizes
-	{
-		fifo->pxHeadAddress = buf;
-		fifo->xItemSize = itemsize;
-		fifo->xByteSize = itemcount * itemsize;
-		fifo->xReadOffset = 0;
-		fifo->xWriteOffset = 0;
-		fifo->xStoredBytes = 0;
+	// Sanity check for memory and element sizes
+	if (buf != NULL && fifo != NULL && count != 0) {
+		fifo->itemspace = buf;
+		fifo->itemsize = size;
+		fifo->allocatedbytes = count * size;
+		fifo->readoffset = 0;
+		fifo->writeoffset = 0;
+		fifo->storedbytes = 0;
 		return fifo;
 	}
 	return NULL;
 }
 
-BOOL fifo_add(xFIFOHandle fifo, const void * item)
+bool fifo_add(fifo_t fifo, const void * item)
 {
 	if (!fifo_full(fifo)) {
-		fifo_copyto(fifo, item);
-		fifo->xStoredBytes += fifo->xItemSize;
-		return TRUE;
+		fifo_copy_to(fifo, item);
+		fifo->storedbytes += fifo->itemsize;
+		return true;
 	} else {
-		return FALSE;
+		return false;
 	}
 }
 
-BOOL fifo_get(xFIFOHandle fifo, const void * item)
+bool fifo_get(fifo_t fifo, void * item)
 {
 	if (!fifo_empty(fifo)) {
-		fifo_copyfrom(fifo, item);
-		fifo->xStoredBytes -= fifo->xItemSize;
-		return TRUE;
+		fifo_copy_from(fifo, item);
+		fifo->storedbytes -= fifo->itemsize;
+		return true;
 	} else {
-		return FALSE;
+		return false;
 	}
 }
 
-BOOL fifo_full(xFIFOHandle fifo)
+bool fifo_full(fifo_t fifo)
 {
-	if (fifo->xStoredBytes >= fifo->xByteSize)
-		return TRUE;
+	if (fifo->storedbytes >= fifo->allocatedbytes)
+		return true;
 	else
-		return FALSE;
+		return false;
 }
 
-BOOL fifo_empty(xFIFOHandle fifo)
+bool fifo_empty(fifo_t fifo)
 {
-	if (fifo->xStoredBytes == 0)
-		return TRUE;
+	if (fifo->storedbytes == 0)
+		return true;
 	else
-		return FALSE;
+		return false;
 }
 
-BOOL fifo_discard(xFIFOHandle fifo, uint16_t count, enum enBufferSide side)
+bool fifo_discard(fifo_t fifo, uint16_t count, enum fifo_side side)
 {
-	uint16_t iTemp;
-	iTemp = fifo->xItemSize * count; // Compute byte size of elements to be deleted
-	if (iTemp <= fifo->xStoredBytes) // Check if we can remove the requested ammount of data
+	uint16_t t;
+	t = fifo->itemsize * count; // Compute byte size of elements to be deleted
+	if (t <= fifo->storedbytes) // Check if we can remove the requested ammount of data
 	{
-		if (side == BUFFER_BACK) {
-			fifo->xReadOffset = (fifo->xReadOffset + iTemp) % fifo->xByteSize; // Increase read pointer n elements
-			fifo->xStoredBytes -= iTemp; // Decrease stored bytes number
-		} else if (side == BUFFER_FRONT) {
-			fifo->xWriteOffset = (fifo->xWriteOffset - iTemp) % fifo->xByteSize; // Decrease write pointer n elements
-			fifo->xStoredBytes -= iTemp; // Decrease stored bytes number
+		if (side == E_FIFO_FRONT) {
+			fifo->readoffset = (fifo->readoffset + t) % fifo->allocatedbytes; // Increase read pointer n elements
+			fifo->storedbytes -= t; // Decrease stored bytes number
+		} else if (side == E_FIFO_BACK) {
+			fifo->writeoffset = (fifo->writeoffset - t) % fifo->allocatedbytes; // Decrease write pointer n elements
+			fifo->storedbytes -= t; // Decrease stored bytes number
 		}
-		return TRUE;
+		return true;
 	}
-	return FALSE;
+	return false;
 }
 
-static void fifo_copyfrom(xFIFOHandle fifo, const void * item)
+static void fifo_copy_from(fifo_t fifo, void * item)
 {
-	memcpy(item, (void *) (fifo->pxHeadAddress + fifo->xReadOffset), (uint16_t) fifo->xItemSize);
-	fifo->xReadOffset += fifo->xItemSize;
-	if (fifo->xReadOffset >= fifo->xByteSize) {
-		fifo->xReadOffset = 0;
+	memcpy(item, (const void *) (fifo->itemspace + fifo->readoffset), (uint16_t) fifo->itemsize);
+	fifo->readoffset += fifo->itemsize;
+	if (fifo->readoffset >= fifo->allocatedbytes) {
+		fifo->readoffset = 0;
 	}
 }
 
-static void fifo_copyto(xFIFOHandle fifo, const void *item)
+static void fifo_copy_to(fifo_t fifo, const void *item)
 {
-	memcpy((void *) (fifo->pxHeadAddress + fifo->xWriteOffset), item, (uint16_t) fifo->xItemSize);
-	fifo->xWriteOffset += fifo->xItemSize;
-	if (fifo->xWriteOffset >= fifo->xByteSize) {
-		fifo->xWriteOffset = 0;
+	memcpy((void *) (fifo->itemspace + fifo->writeoffset), item, (uint16_t) fifo->itemsize);
+	fifo->writeoffset += fifo->itemsize;
+	if (fifo->writeoffset >= fifo->allocatedbytes) {
+		fifo->writeoffset = 0;
 	}
 }
