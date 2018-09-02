@@ -29,20 +29,21 @@ static void fifo_copy_to(fifo_t, const void *);
 /*-------------------------------------------------------------*
  *		Public API implementation			*
  *-------------------------------------------------------------*/
-fifo_t fifo_create(uint16_t count, uint16_t size)
+fifo_t fifo_create(uint16_t count, size_t size)
 {
 	fifo_t newfifo;
-	if (count > (uint16_t) 0) {
-
-		if (NULL != (newfifo = (struct fifo_descriptor *) malloc(sizeof(struct fifo_descriptor)))) {
+	if (count > 0) {
+		newfifo = (struct fifo_descriptor *) malloc(sizeof(struct fifo_descriptor));
+		if (newfifo != NULL) {
 			// Calculate the size in bytes of the buffer
-			uint16_t bytesize = (uint16_t) count * size;
+			size_t bsize = count * size;
 			// Try to allocate space for the buffer data
-			newfifo->itemspace = (uint8_t *) malloc(bytesize);
+			newfifo->itemspace = malloc(bsize);
 			if (newfifo->itemspace != NULL) {
 				// Initialize structure members
 				newfifo->itemsize = size;
-				newfifo->allocatedbytes = bytesize;
+				newfifo->allocatedbytes = bsize;
+				newfifo->readoffset = 0;
 				newfifo->writeoffset = 0;
 				newfifo->storedbytes = 0;
 				// Return the pointer to fifo_descriptor structure
@@ -57,7 +58,7 @@ fifo_t fifo_create(uint16_t count, uint16_t size)
 	return NULL;
 }
 
-fifo_t fifo_create_static(fifo_t fifo, uint8_t * buf, uint16_t count, uint16_t size)
+fifo_t fifo_create_static(fifo_t fifo, void * buf, uint16_t count, size_t size)
 {
 	// Sanity check for memory and element sizes
 	if (buf != NULL && fifo != NULL && count != 0) {
@@ -74,7 +75,7 @@ fifo_t fifo_create_static(fifo_t fifo, uint8_t * buf, uint16_t count, uint16_t s
 
 bool fifo_add(fifo_t fifo, const void * item)
 {
-	if (!fifo_full(fifo)) {
+	if (!fifo_is_full(fifo)) {
 		fifo_copy_to(fifo, item);
 		fifo->storedbytes += fifo->itemsize;
 		return true;
@@ -85,7 +86,7 @@ bool fifo_add(fifo_t fifo, const void * item)
 
 bool fifo_get(fifo_t fifo, void * item)
 {
-	if (!fifo_empty(fifo)) {
+	if (!fifo_is_empty(fifo)) {
 		fifo_copy_from(fifo, item);
 		fifo->storedbytes -= fifo->itemsize;
 		return true;
@@ -94,7 +95,7 @@ bool fifo_get(fifo_t fifo, void * item)
 	}
 }
 
-bool fifo_full(fifo_t fifo)
+bool fifo_is_full(fifo_t fifo)
 {
 	if (fifo->storedbytes >= fifo->allocatedbytes)
 		return true;
@@ -102,7 +103,7 @@ bool fifo_full(fifo_t fifo)
 		return false;
 }
 
-bool fifo_empty(fifo_t fifo)
+bool fifo_is_empty(fifo_t fifo)
 {
 	if (fifo->storedbytes == 0)
 		return true;
@@ -130,7 +131,7 @@ bool fifo_discard(fifo_t fifo, uint16_t count, enum fifo_side side)
 
 static void fifo_copy_from(fifo_t fifo, void * item)
 {
-	memcpy(item, (const void *) (fifo->itemspace + fifo->readoffset), (uint16_t) fifo->itemsize);
+	memcpy(item, fifo->itemspace + fifo->readoffset, fifo->itemsize);
 	fifo->readoffset += fifo->itemsize;
 	if (fifo->readoffset >= fifo->allocatedbytes) {
 		fifo->readoffset = 0;
@@ -139,7 +140,7 @@ static void fifo_copy_from(fifo_t fifo, void * item)
 
 static void fifo_copy_to(fifo_t fifo, const void *item)
 {
-	memcpy((void *) (fifo->itemspace + fifo->writeoffset), item, (uint16_t) fifo->itemsize);
+	memcpy(fifo->itemspace + fifo->writeoffset, item, fifo->itemsize);
 	fifo->writeoffset += fifo->itemsize;
 	if (fifo->writeoffset >= fifo->allocatedbytes) {
 		fifo->writeoffset = 0;

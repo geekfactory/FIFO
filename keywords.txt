@@ -14,10 +14,9 @@ fifo_create	KEYWORD2
 fifo_create_static	KEYWORD2
 fifo_add	KEYWORD2
 fifo_get	KEYWORD2
-fifo_full	KEYWORD2
-fifo_empty	KEYWORD2
+fifo_is_full	KEYWORD2
+fifo_is_empty	KEYWORD2
 fifo_discard	KEYWORD2
-
 #######################################
 # Instances (KEYWORD2)
 #######################################

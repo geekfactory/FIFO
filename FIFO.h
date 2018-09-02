@@ -59,15 +59,15 @@ struct fifo_descriptor {
 	/**
 	 * Start address on memory for item space.
 	 */
-	uint8_t * itemspace;
+	void * itemspace;
 	/** 
 	 * Size in bytes for each element in the buffer.
 	 */
-	uint16_t itemsize;
+	size_t itemsize;
 	/**
 	 * Size in bytes of the whole buffer.
 	 */
-	uint16_t allocatedbytes;
+	size_t allocatedbytes;
 	/**
 	 * Memory offset from which we will read data.
 	 */
@@ -79,7 +79,7 @@ struct fifo_descriptor {
 	/**
 	¨* Number of bytes used currently by stored items.
 	 */
-	uint16_t storedbytes;
+	size_t storedbytes;
 };
 
 /**
@@ -134,7 +134,7 @@ extern "C" {
 	 * @return This function performs some basic validation on the parameters passed,
 	 * if something is wrong with them,it will return NULL.
 	 */
-	fifo_t fifo_create_static(fifo_t fifo, uint8_t * buf, uint16_t count, uint16_t size);
+	fifo_t fifo_create_static(fifo_t fifo, void * buf, uint16_t count, size_t size);
 
 	/**
 	 * @brief Adds one item to the FIFO buffer
@@ -181,7 +181,7 @@ extern "C" {
 	 *
 	 * @return This function returns true if the buffer is full, false otherwise.
 	 */
-	bool fifo_full(fifo_t fifo);
+	bool fifo_is_full(fifo_t fifo);
 
 	/**
 	 * @brief Checks if the FIFO is empty.
@@ -192,7 +192,7 @@ extern "C" {
 	 *
 	 * @return This function returns true if the buffer is empty, false otherwise.
 	 */
-	bool fifo_empty(fifo_t fifo);
+	bool fifo_is_empty(fifo_t fifo);
 
 	/**
 	 * @brief Discard data from the buffer.
