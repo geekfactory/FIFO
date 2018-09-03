@@ -1,5 +1,5 @@
 # Geek Factory FIFO Library #
-This is a generic FIFO buffer that can be used to store any kind of items. It is written in C language and can be compiled and used on almost any architecture. It was designed to be used on memory limited achitectures such as microcontrollers. Examples of the applications that can be built with this library include:
+This is a generic FIFO buffer that can be used to store any kind of items. It is written in C language and can be compiled and used on almost any architecture. It was designed to be used on memory limited architectures such as microcontrollers. Examples of the applications that can be built with this library include:
 
 * Work queues.
 * Message queues.
@@ -76,7 +76,7 @@ void loop() {
 
 * Improve program modularity and reliability by creating common data structures.
 * Provide a portable implementation of a FIFO data structure.
-* Strong portability, specially on embedded systems, by using C language.
+* Strong portability, especially on embedded systems, by using C language.
 * Provide functions for static memory allocation applications.
 * Easy to configure, use and understand.
 
