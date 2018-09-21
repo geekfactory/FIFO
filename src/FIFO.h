@@ -79,7 +79,7 @@ struct fifo_descriptor {
 	/**
 	¨* Number of bytes used currently by stored items.
 	 */
-	size_t storedbytes;
+    size_t storedbytes;
 };
 
 /**
@@ -116,7 +116,7 @@ extern "C" {
 	 * structure that contains the buffer information (fifo_t). NULL is returned if
 	 * something fails.
 	 */
-	fifo_t fifo_create(uint16_t count, uint16_t size);
+	fifo_t fifo_create(uint16_t count, size_t size);
 
 	/**
 	 * @brief Creates a statically allocated FIFO buffer
