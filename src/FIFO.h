@@ -79,7 +79,7 @@ struct fifo_descriptor {
 	/**
 	¨* Number of bytes used currently by stored items.
 	 */
-    size_t storedbytes;
+	size_t storedbytes;
 };
 
 /**
