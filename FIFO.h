@@ -71,15 +71,15 @@ struct fifo_descriptor {
 	/**
 	 * Memory offset from which we will read data.
 	 */
-	uint16_t readoffset;
+	volatile uint16_t readoffset;
 	/**
 	 * Memory offset where data will be written.
 	 */
-	uint16_t writeoffset;
+	volatile uint16_t writeoffset;
 	/**
 	¨* Number of bytes used currently by stored items.
 	 */
-	size_t storedbytes;
+	volatile size_t storedbytes;
 };
 
 /**

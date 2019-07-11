@@ -1,52 +1,64 @@
+/**
+   GeekFactory - "INNOVATING TOGETHER"
+   Distribucion de materiales para el desarrollo e innovacion tecnologica
+   www.geekfactory.mx
+
+   This example shows the basic usage of the FIFO library. We create a FIFO,
+   then we fill it with some data and then dump the data to the serial monitor.
+*/
 #include "FIFO.h"
 
-// Array of test data
+// array of test data
 char data[] = "Hola Mundo!!!!";
+// type to store a FIFO reference
+fifo_t myfifo;
 
 void setup() {
+  // prepare serial interface
   Serial.begin(115200);
+  while (!Serial);
 
-  // Create a FIFO (queue) capable of storing 10 items
-  fifo_t myfifo = fifo_create(10, sizeof(char));
+  // show message on serial monitor
+  Serial.println(F("----------------------------------------------------"));
+  Serial.println(F("             FIFO LIBRARY TEST PROGRAM              "));
+  Serial.println(F("             https://www.geekfactory.mx             "));
+  Serial.println(F("----------------------------------------------------"));
 
-  // Check if FIFO was created
+  // create a FIFO (queue) capable of storing 10 items
+  myfifo = fifo_create(10, sizeof(char));
+
+  // check if FIFO was created
   if (myfifo == NULL) {
-    Serial.println(F("Cannot create FIFO... stopping"));
+    Serial.println(F("Cannot create FIFO... halting!"));
     for (;;);
+  } else {
+    Serial.println(F("FIFO created successfully"));
   }
 
-  // Put data to FIFO
-  for (int i = 0; i < sizeof(data); i++)
+  // put some data on the fifo buffer
+  Serial.println(F("\r\nFILLING FIFO WITH DATA..."));
+  for (unsigned int i = 0; i < sizeof(data); i++)
   {
-    char c = data[i];
-    Serial.print(F("Adding item to fifo: "));
-    Serial.print(c);
-    if (fifo_add(myfifo, &c)) {
-      Serial.println(F(" ...OK"));
+    Serial.print(F("Add item to FIFO: "));
+    Serial.print(data[i]);
+    if (fifo_add(myfifo, &data[i])) {
+      Serial.println(F(" (OK)"));
     } else {
-      Serial.println(F(" ...FAIL"));
+      Serial.println(F(" (FAIL)"));
     }
   }
 
-  // Get data from FIFO
-  Serial.println(F("\r\nNow get data from FIFO"));
-  // Dump data from FIFO to serial monitor
-  while (!fifo_empty(myfifo)) {
+  // get data from FIFO
+  Serial.println(F("\r\nGETTING DATA FROM FIFO..."));
+  // dump data from FIFO to serial monitor
+  while (!fifo_is_empty(myfifo)) {
     char c;
     fifo_get(myfifo, &c);
     Serial.print(c);
   }
 
-  // Check for empty FIFO
-  Serial.println();
-  if (fifo_empty(myfifo)) {
-    Serial.println(F("FIFO Empty"));
-  } else {
-    Serial.println(F("FIFO NOT Empty"));
-  }
-
-  // End of test program
-  Serial.println(F("Done."));
+  // end of test program
+  Serial.println(F("DONE"));
 }
 
 void loop() {
