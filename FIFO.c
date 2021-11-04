@@ -146,3 +146,9 @@ static void fifo_copy_to(fifo_t fifo, const void *item)
 		fifo->writeoffset = 0;
 	}
 }
+
+int fifo_count(fifo_t fifo){
+	uint8_t fifo_len;
+	fifo_len = fifo->storedbytes/fifo->itemsize;
+	return fifo_len;
+}

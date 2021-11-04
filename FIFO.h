@@ -209,6 +209,13 @@ extern "C" {
 	 */
 	bool fifo_discard(fifo_t fifo, uint16_t count, enum fifo_side side);
 
+	/*!
+	* @brief this function returns the number of elements in the FIFO
+	* @param fifo pointer to the FIFO
+	* @return the number of elements in the FIFO
+	*/
+	int fifo_count(fifo_t fifo);
+
 #ifdef __cplusplus
 }
 #endif
